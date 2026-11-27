@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indocement Citeureup — Babylon.js 7 Engine (SSAO2 + Water + Sky + ACES)</title>
+  <style>
+    :root {
+      --bg-panel: rgba(11, 17, 27, 0.86);
+      --bg-hover: rgba(30, 45, 68, 0.94);
+      --border: rgba(148, 163, 184, 0.24);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --amber: #f59e0b;
+      --accent: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: #0a101b; color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    }
+    #renderCanvas { width: 100%; height: 100%; display: block; outline: none; touch-action: none; }
+
+    .topbar {
+      position: fixed; top: 14px; left: 14px; right: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; pointer-events: none; z-index: 20;
+    }
+    .card {
+      pointer-events: auto; background: var(--bg-panel); backdrop-filter: blur(14px);
+      border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 9px 14px; }
+    .brand-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--amber); box-shadow: 0 0 10px var(--amber); flex-shrink: 0;
+    }
+    .brand h1 { font-size: 13.5px; font-weight: 650; line-height: 1.2; }
+    .brand p { font-size: 11px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 6px; }
+
+    .btn {
+      appearance: none; border: 1px solid transparent; background: transparent; color: var(--text);
+      padding: 6.5px 10px; border-radius: 7px; font-size: 11.5px; font-weight: 550;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      text-decoration: none; white-space: nowrap; transition: all 0.15s ease;
+    }
+    .btn:hover { background: var(--bg-hover); border-color: var(--border); }
+    .btn.active { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.55); color: #fde68a; }
+    .btn.three { background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.45); color: #bae6fd; }
+    .btn.primary { background: #d97706; border-color: #f59e0b; color: #fff; }
+    .divider { width: 1px; height: 20px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
+
+    .sidebar {
+      position: fixed; top: 76px; left: 14px; width: 252px; max-height: calc(100vh - 156px);
+      display: flex; flex-direction: column; z-index: 20; transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+    .sidebar.collapsed { transform: translateX(-272px); opacity: 0; pointer-events: none; }
+    .sidebar-head { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .sidebar-head span { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .landmark-list { overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .landmark-item {
+      text-align: left; width: 100%; background: transparent; border: 1px solid transparent; color: var(--text);
+      padding: 7px 9px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 550;
+    }
+    .landmark-item:hover { background: var(--bg-hover); border-color: var(--border); }
+    .landmark-item.selected { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.5); }
+
+    .bottom-dock {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 4px; padding: 6px; z-index: 20;
+      max-width: calc(100vw - 28px); overflow-x: auto;
+    }
+
+    #loader {
+      position: fixed; inset: 0; background: #0a101b; z-index: 50;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      transition: opacity 0.35s ease;
+    }
+    #loader.hidden { opacity: 0; pointer-events: none; }
+    .bar-wrap { width: 280px; height: 6px; background: rgba(148, 163, 184, 0.16); border-radius: 99px; overflow: hidden; }
+    .bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #d97706, #fbbf24); transition: width 0.15s ease; }
+  </style>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+</head>
+
+<body>
+  <div id="loader">
+    <div style="font-size:16px;font-weight:650;">PT Indocement Citeureup — Babylon.js 7 Open 3D Engine</div>
+    <div class="bar-wrap"><div id="bar-fill" class="bar-fill"></div></div>
+    <div id="loader-sub" style="font-size:12px;color:#94a3b8;">Memuat Babylon.js PBR + SSAO2 + Water + Sky...</div>
+  </div>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <header class="topbar">
+    <div class="card brand">
+      <div class="brand-dot" id="status-dot"></div>
+      <div>
+        <h1>PT Indocement Citeureup — Babylon.js 7 Photoreal Engine</h1>
+        <p id="stats-line">BabylonJS/Babylon.js · SSAO2 · SkyMaterial · WaterMaterial · ACES</p>
+      </div>
+    </div>
+    <div class="card actions">
+      <button class="btn active" id="btn-sidebar">Lokasi</button>
+      <button class="btn active" id="btn-ssao">SSAO2 + Bloom</button>
+      <button class="btn" id="btn-rotate">Auto-Orbit</button>
+      <div class="divider"></div>
+      <button class="btn active" data-mood="day">Siang</button>
+      <button class="btn" data-mood="golden">Sore</button>
+      <button class="btn" data-mood="night">Malam</button>
+      <div class="divider"></div>
+      <a class="btn three" href="./index.html">← Three.js + PathTracer</a>
+      <a class="btn primary" href="./indocement_3d_map_full.glb" download="indocement_3d_map_full.glb">Download GLB</a>
+    </div>
+  </header>
+
+  <aside class="card sidebar" id="sidebar">
+    <div class="sidebar-head"><span>Area Indocement</span><span>13</span></div>
+    <div class="landmark-list" id="lm-list"></div>
+  </aside>
+
+  <nav class="card bottom-dock">
+    <button class="btn active" data-cam="overview">Overview</button>
+    <button class="btn" data-cam="preheater">Plant 14 &amp; Kiln</button>
+    <button class="btn" data-cam="domes">Kubah &amp; Konveyor</button>
+    <button class="btn" data-cam="gmo">GMO Office</button>
+    <button class="btn" data-cam="gate">Gerbang &amp; Timbang</button>
+    <button class="btn" data-cam="river">Sungai &amp; Tanah</button>
+  </nav>
+
+  <script>
+    const CAM_PRESETS = {
+      overview:  { pos: [0, 118, 154], target: [0, 0, 2] },
+      preheater: { pos: [48, 20, 34],  target: [80, 6.5, 0] },
+      domes:     { pos: [-48, 34, 62], target: [-16, 4.5, 4] },
+      gmo:       { pos: [4, 18, 12],   target: [24, 3.5, -14] },
+      gate:      { pos: [-72, 11, -22], target: [-53.5, 3, -40.5] },
+      river:     { pos: [24, 22, 74],  target: [8, 0.5, 30] },
+    };
+
+    const LANDMARKS = [
+      { id: 'plant14', name: 'Plant 14 Preheater & Kilns', pos: [80, 14, 0], view: [48, 22, 32] },
+      { id: 'silos', name: 'Cement Silos & Rel Curah', pos: [98, 12, 2], view: [66, 18, 32] },
+      { id: 'domes', name: 'Kompleks 4 Storage Domes', pos: [-25, 10, -10], view: [-54, 34, 48] },
+      { id: 'clinker', name: 'Clinker Dome & Vault', pos: [-10, 9, 32], view: [-26, 22, 62] },
+      { id: 'gmo', name: 'GMO & Plant 14 Office', pos: [24, 7.5, -14], view: [4, 18, 10] },
+      { id: 'gate', name: 'Gerbang Utama Indocement', pos: [-54.8, 5.5, -41.4], view: [-72, 12, -22] },
+      { id: 'weigh', name: 'Jembatan Timbang Truk', pos: [-51.5, 3.0, -39.2], view: [-64, 9, -24] },
+      { id: 'raw2', name: 'Raw Mill II & Coal Hall', pos: [6, 5.8, -38], view: [-16, 18, -14] },
+      { id: 'tank', name: 'Tank Farm, LPG & Cooling', pos: [62, 6, -26], view: [42, 18, -6] },
+      { id: 'log', name: 'Indocement Logistic Div', pos: [46, 6, -54], view: [28, 18, -32] },
+      { id: 'bag', name: 'Paper Bag & QC Lab', pos: [-44, 5, -16], view: [-24, 20, 14] },
+      { id: 'dp2', name: 'Mining & Mechanical DP 2', pos: [-92, 5.5, -15], view: [-64, 22, 12] },
+      { id: 'river', name: 'Sungai Cileungsi & Tanah', pos: [26, 1.0, 27.5], view: [18, 26, 68] },
+    ];
+
+    function makeBabylonWaterBump(scene) {
+      const N = 256;
+      const dt = new BABYLON.DynamicTexture('waterBump', N, scene, true);
+      dt.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+      dt.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+      const ctx = dt.getContext();
+      const img = ctx.createImageData(N, N);
+      const tau = Math.PI * 2;
+      for (let y = 0; y < N; y++) {
+        const v = y / N;
+        for (let x = 0; x < N; x++) {
+          const u = x / N;
+          const dx = 0.35 * Math.cos(tau * (3 * u + 2 * v)) + 0.25 * Math.cos(tau * (8 * u - 5 * v));
+          const dy = 0.32 * Math.sin(tau * (2 * u + 4 * v)) + 0.24 * Math.sin(tau * (-7 * u + 9 * v));
+          const l = Math.hypot(dx, dy, 1.8);
+          const idx = (y * N + x) * 4;
+          img.data[idx] = Math.round(((dx / l) * 0.5 + 0.5) * 255);
+          img.data[idx + 1] = Math.round(((dy / l) * 0.5 + 0.5) * 255);
+          img.data[idx + 2] = Math.round(((1.8 / l) * 0.5 + 0.5) * 255);
+          img.data[idx + 3] = 255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      dt.update();
+      return dt;
+    }
+
+    const canvas = document.getElementById('renderCanvas');
+    const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true });
+    const scene = new BABYLON.Scene(engine);
+    scene.useRightHandedSystem = true;
+    scene.clearColor = new BABYLON.Color4(0.75, 0.82, 0.88, 1);
+
+    const camera = new BABYLON.ArcRotateCamera('cam', 0, 0, 100, new BABYLON.Vector3(...CAM_PRESETS.overview.target), scene);
+    camera.setPosition(new BABYLON.Vector3(...CAM_PRESETS.overview.pos));
+    camera.attachControl(canvas, true);
+    camera.wheelDeltaPercentage = 0.025;
+    camera.minZ = 0.5;
+    camera.maxZ = 1600;
+    camera.upperBetaLimit = Math.PI * 0.485;
+    camera.lowerRadiusLimit = 8;
+    camera.upperRadiusLimit = 380;
+
+    // Physical Skybox + SkyMaterial
+    const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', { size: 1200 }, scene);
+    const skyMat = new BABYLON.SkyMaterial('skyMat', scene);
+    skyMat.backFaceCulling = false;
+    skyMat.inclination = 0.22;
+    skyMat.azimuth = 0.25;
+    skyMat.turbidity = 4.5;
+    skyMat.luminance = 1.05;
+    skybox.material = skyMat;
+    skybox.infiniteDistance = true;
+
+    const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
+    hemi.intensity = 0.68;
+
+    const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(0.45, -0.78, -0.45), scene);
+    sun.position = new BABYLON.Vector3(-90, 145, 95);
+    sun.intensity = 2.6;
+    const shadowGen = new BABYLON.ShadowGenerator(2048, sun);
+    shadowGen.usePercentageCloserFiltering = true;
+    shadowGen.bias = 0.0006;
+
+    // Default Post-Processing Pipeline (Bloom + FXAA + ACES ToneMapping)
+    const defaultPipeline = new BABYLON.DefaultRenderingPipeline('defaultPipeline', true, scene, [camera]);
+    defaultPipeline.fxaaEnabled = true;
+    defaultPipeline.bloomEnabled = true;
+    defaultPipeline.bloomThreshold = 0.88;
+    defaultPipeline.bloomWeight = 0.22;
+    defaultPipeline.imageProcessingEnabled = true;
+    defaultPipeline.imageProcessing.toneMappingEnabled = true;
+    defaultPipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+    defaultPipeline.imageProcessing.exposure = 1.15;
+
+    let ssaoPipeline = null;
+    try {
+      ssaoPipeline = new BABYLON.SSAO2RenderingPipeline('ssao2', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [camera]);
+      ssaoPipeline.radius = 2.2;
+      ssaoPipeline.totalStrength = 1.15;
+      ssaoPipeline.samples = 16;
+    } catch (e) {
+      console.warn('SSAO2 unavailable:', e);
+    }
+
+    let waterMat = null;
+    let riverMesh = null;
+    let autoOrbit = false;
+
+    const MOODS = {
+      day:    { inc: 0.22, az: 0.25, turb: 4.5, dir: [0.45, -0.78, -0.45], sunPos: [-90, 145, 95], sunCol: [1, 0.96, 0.89], sunInt: 2.65, hemiInt: 0.70, exp: 1.15, fogCol: [0.76, 0.82, 0.88], fogDens: 0.0005, waterCol: [0.04, 0.22, 0.17] },
+      golden: { inc: 0.45, az: 0.20, turb: 9.0, dir: [0.75, -0.32, -0.45], sunPos: [-150, 52, 85], sunCol: [1, 0.65, 0.32], sunInt: 3.1, hemiInt: 0.55, exp: 1.08, fogCol: [0.85, 0.69, 0.53], fogDens: 0.0011, waterCol: [0.09, 0.20, 0.14] },
+      night:  { inc: 0.62, az: 0.72, turb: 1.5, dir: [-0.4, -0.72, 0.4], sunPos: [70, 120, -70], sunCol: [0.55, 0.72, 1.0], sunInt: 0.55, hemiInt: 0.35, exp: 1.25, fogCol: [0.04, 0.07, 0.13], fogDens: 0.0022, waterCol: [0.02, 0.08, 0.10] },
+    };
+
+    function applyMood(key) {
+      const m = MOODS[key];
+      skyMat.inclination = m.inc;
+      skyMat.azimuth = m.az;
+      skyMat.turbidity = m.turb;
+      sun.direction.set(...m.dir);
+      sun.position.set(...m.sunPos);
+      sun.diffuse.set(...m.sunCol);
+      sun.intensity = m.sunInt;
+      hemi.intensity = m.hemiInt;
+      defaultPipeline.imageProcessing.exposure = m.exp;
+      scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+      scene.fogColor.set(...m.fogCol);
+      scene.fogDensity = m.fogDens;
+      if (waterMat) waterMat.waterColor.set(...m.waterCol);
+      document.querySelectorAll('[data-mood]').forEach(b => b.classList.toggle('active', b.dataset.mood === key));
+    }
+    applyMood('day');
+
+    function flyTo(pos, target) {
+      const pTarget = new BABYLON.Vector3(...pos);
+      const tTarget = new BABYLON.Vector3(...target);
+      BABYLON.Animation.CreateAndStartAnimation('camPos', camera, 'position', 60, 42, camera.position.clone(), pTarget, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, new BABYLON.CubicEase());
+      BABYLON.Animation.CreateAndStartAnimation('camTgt', camera, 'target', 60, 42, camera.target.clone(), tTarget, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, new BABYLON.CubicEase());
+    }
+
+    const lmList = document.getElementById('lm-list');
+    for (const lm of LANDMARKS) {
+      const btn = document.createElement('button');
+      btn.className = 'landmark-item';
+      btn.textContent = lm.name;
+      btn.onclick = () => {
+        document.querySelectorAll('.landmark-item').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        flyTo(lm.view, lm.pos);
+      };
+      lmList.appendChild(btn);
+    }
+
+    // Load v3 GLB into Babylon.js 7
+    BABYLON.SceneLoader.ImportMeshAsync(
+      '', './', 'indocement_3d_map_full.glb', scene,
+      (evt) => {
+        if (evt.lengthComputable) {
+          const pct = Math.min(100, Math.round((evt.loaded / evt.total) * 100));
+          document.getElementById('bar-fill').style.width = `${pct}%`;
+          document.getElementById('loader-sub').textContent =
+            `Memuat GLB ke Babylon.js 7 (${(evt.loaded / 1048576).toFixed(1)} MB) — ${pct}%`;
+        }
+      }
+    ).then((result) => {
+      let tris = 0;
+      const reflectMeshes = [skybox];
+      for (const m of result.meshes) {
+        if (!m.getTotalVertices || m.getTotalVertices() === 0) continue;
+        tris += (m.getTotalIndices ? m.getTotalIndices() : m.getTotalVertices()) / 3;
+        const nm = m.name || '';
+        const isPlume = nm.includes('Plume');
+        const isRiver = nm.includes('River_Water');
+        const isGround = nm.includes('Terrain') || nm.includes('Plinth') || nm.includes('Soil');
+        if (!(isPlume || isRiver || isGround)) {
+          shadowGen.addShadowCaster(m, false);
+        }
+        m.receiveShadows = !isPlume;
+        if (isRiver) {
+          riverMesh = m;
+        } else if (!isPlume) {
+          reflectMeshes.push(m);
+        }
+        if (m.material && (m.material.name.includes('Leaf') || m.material.name.includes('Grass'))) {
+          m.material.transparencyMode = BABYLON.Material.MATERIAL_ALPHATEST;
+          m.material.alphaCutOff = 0.42;
+          m.material.backFaceCulling = false;
+        }
+      }
+      if (riverMesh) {
+        waterMat = new BABYLON.WaterMaterial('waterMat', scene);
+        waterMat.bumpTexture = makeBabylonWaterBump(scene);
+        waterMat.windForce = -4;
+        waterMat.waveHeight = 0.14;
+        waterMat.bumpHeight = 0.15;
+        waterMat.waveLength = 0.25;
+        waterMat.colorBlendFactor = 0.42;
+        waterMat.waterColor = new BABYLON.Color3(0.04, 0.22, 0.17);
+        for (const rm of reflectMeshes) waterMat.addToRenderList(rm);
+        riverMesh.material = waterMat;
+      }
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('stats-line').textContent =
+        `BabylonJS 7 Ready · ${Math.round(tris).toLocaleString('en-US')} tris · SSAO2 + WaterMaterial + ACES`;
+    }).catch((err) => {
+      console.error('Babylon GLB error:', err);
+      document.getElementById('loader-sub').textContent = 'Gagal memuat GLB di Babylon.js — cek console.';
+      document.getElementById('status-dot').style.background = '#ef4444';
+    });
+
+    document.getElementById('btn-sidebar').onclick = (e) => {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      e.currentTarget.classList.toggle('active');
+    };
+    document.getElementById('btn-ssao').onclick = (e) => {
+      const on = !e.currentTarget.classList.contains('active');
+      e.currentTarget.classList.toggle('active', on);
+      defaultPipeline.bloomEnabled = on;
+      if (ssaoPipeline) ssaoPipeline.totalStrength = on ? 1.15 : 0.0;
+    };
+    document.getElementById('btn-rotate').onclick = (e) => {
+      autoOrbit = !autoOrbit;
+      e.currentTarget.classList.toggle('active', autoOrbit);
+    };
+    document.querySelectorAll('[data-mood]').forEach(b => b.onclick = () => applyMood(b.dataset.mood));
+    document.querySelectorAll('[data-cam]').forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll('[data-cam]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        const c = CAM_PRESETS[b.dataset.cam];
+        flyTo(c.pos, c.target);
+      };
+    });
+
+    engine.runRenderLoop(() => {
+      if (autoOrbit) camera.alpha += 0.0022;
+      scene.render();
+    });
+    window.addEventListener('resize', () => engine.resize());
+  </script>
+</body>
+
+</html>
