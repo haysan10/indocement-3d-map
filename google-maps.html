@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indocement Citeureup — Google Maps Satellite &amp; Photorealistic 3D Twin</title>
+  <style>
+    :root {
+      --bg-panel: rgba(11, 17, 27, 0.88);
+      --bg-hover: rgba(30, 45, 68, 0.94);
+      --border: rgba(148, 163, 184, 0.24);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: #0a101b; color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    }
+
+    #viewport {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+    }
+    #map-3d-host, #map-2d-host, gmp-map-3d, #map-2d {
+      width: 100%; height: 100%; display: block;
+    }
+    .hidden { display: none !important; }
+
+    .topbar {
+      position: fixed; top: 14px; left: 14px; right: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; pointer-events: none; z-index: 30;
+    }
+    .card {
+      pointer-events: auto; background: var(--bg-panel); backdrop-filter: blur(14px);
+      border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 9px 14px; }
+    .brand-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 10px var(--green); flex-shrink: 0;
+    }
+    .brand h1 { font-size: 13.5px; font-weight: 650; line-height: 1.2; }
+    .brand p { font-size: 11px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 6px; }
+
+    .btn {
+      appearance: none; border: 1px solid transparent; background: transparent; color: var(--text);
+      padding: 6.5px 10px; border-radius: 7px; font-size: 11.5px; font-weight: 550;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      text-decoration: none; white-space: nowrap; transition: all 0.15s ease;
+    }
+    .btn:hover { background: var(--bg-hover); border-color: var(--border); }
+    .btn.active { background: rgba(16, 185, 129, 0.20); border-color: rgba(16, 185, 129, 0.55); color: #a7f3d0; }
+    .btn.three { background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.45); color: #bae6fd; }
+    .btn.babylon { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.45); color: #fde68a; }
+    .btn.primary { background: #059669; border-color: #10b981; color: #fff; }
+    .divider { width: 1px; height: 20px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
+
+    .sidebar {
+      position: fixed; top: 76px; left: 14px; width: 256px; max-height: calc(100vh - 156px);
+      display: flex; flex-direction: column; z-index: 25; transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+    .sidebar.collapsed { transform: translateX(-276px); opacity: 0; pointer-events: none; }
+    .sidebar-head {
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sidebar-head span { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .landmark-list { overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .landmark-item {
+      text-align: left; width: 100%; background: transparent; border: 1px solid transparent; color: var(--text);
+      padding: 7px 9px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 550;
+      display: flex; justify-content: space-between; gap: 6px; align-items: center;
+    }
+    .landmark-item:hover { background: var(--bg-hover); border-color: var(--border); }
+    .landmark-item.selected { background: rgba(16, 185, 129, 0.18); border-color: rgba(16, 185, 129, 0.55); }
+    .lm-tag { font-size: 10px; color: #6ee7b7; background: rgba(16, 185, 129, 0.16); padding: 2px 6px; border-radius: 999px; }
+
+    .info-box {
+      position: fixed; top: 76px; right: 14px; width: 276px; padding: 12px 14px; z-index: 25; display: none;
+    }
+    .info-box.visible { display: block; }
+    .info-box h2 { font-size: 13px; font-weight: 650; margin-bottom: 4px; }
+    .info-box p { font-size: 12px; color: #cbd5e1; line-height: 1.45; }
+    .info-meta {
+      margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+      display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap;
+    }
+
+    /* API Key Onboarding Overlay */
+    #key-gate {
+      position: fixed; inset: 0; background: rgba(9, 14, 24, 0.92); backdrop-filter: blur(12px);
+      z-index: 40; display: flex; align-items: center; justify-content: center; padding: 18px;
+    }
+    .gate-card {
+      max-width: 520px; width: 100%; background: #0f172a; border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    }
+    .gate-card h2 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .gate-card p { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin-bottom: 12px; }
+    .gate-steps {
+      background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 9px;
+      padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #cbd5e1; line-height: 1.6;
+    }
+    .gate-steps ol { padding-left: 18px; }
+    .gate-steps a { color: #38bdf8; }
+    .key-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .key-row input {
+      flex: 1; background: #090f1c; border: 1px solid var(--border); color: var(--text);
+      border-radius: 8px; padding: 9px 12px; font-size: 13px; outline: none;
+    }
+    .key-row input:focus { border-color: var(--green); }
+    .gate-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .note-tiny { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+    @media (max-width: 780px) {
+      .sidebar { width: 215px; top: 72px; }
+      .brand p, .info-box { display: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="card brand">
+      <div class="brand-dot" id="status-dot"></div>
+      <div>
+        <h1>PT Indocement Citeureup — Google Maps Satelit &amp; 3D</h1>
+        <p id="stats-line">Koordinat Referensi: -6.479811, 106.899118 (Citeureup, Bogor)</p>
+      </div>
+    </div>
+    <div class="card actions">
+      <button class="btn active" id="btn-sidebar">Lokasi</button>
+      <button class="btn active" id="btn-mode-3d">3D Satelit</button>
+      <button class="btn" id="btn-mode-2d">2D Satelit</button>
+      <button class="btn" id="btn-toggle-glb" title="Overlay Model 3D Indocement GLB ke Google Maps 3D">Overlay GLB</button>
+      <button class="btn" id="btn-change-key">API Key</button>
+      <div class="divider"></div>
+      <a class="btn three" href="./index.html">← Three.js N8AO</a>
+      <a class="btn babylon" href="./babylon.html">Babylon.js 7</a>
+    </div>
+  </header>
+
+  <aside class="card sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span>Titik Satelit Indocement</span>
+      <span>14</span>
+    </div>
+    <div class="landmark-list" id="lm-list"></div>
+  </aside>
+
+  <section class="card info-box" id="info-box">
+    <h2 id="info-title">Lokasi</h2>
+    <p id="info-desc"></p>
+    <div class="info-meta">
+      <span id="info-gps">-6.4798, 106.8991</span>
+      <span id="info-elev">Elevasi: -</span>
+    </div>
+  </section>
+
+  <div id="viewport">
+    <div id="map-3d-host"></div>
+    <div id="map-2d-host" class="hidden"><div id="map-2d"></div></div>
+  </div>
+
+  <!-- Interactive API Key / Demo Key Setup Gate (no hardcoded key in repo!) -->
+  <div id="key-gate">
+    <div class="gate-card">
+      <h2>Aktifkan Google Maps Platform Satelit &amp; 3D Tiles</h2>
+      <p>
+        Sesuai aturan keamanan Google Maps Platform, API key tidak ditanam di repositori publik.
+        Masukkan <strong>Google Maps API Key</strong> atau gunakan <strong>Maps Demo Key</strong> gratis untuk
+        membuka citra satelit &amp; Google Photorealistic 3D area <strong>PT Indocement Citeureup</strong>
+        (<code>-6.479811, 106.899118</code>).
+      </p>
+      <div class="gate-steps">
+        <ol>
+          <li>Buka <a href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener">Google Maps Demo Key</a> (tanpa kartu kredit) atau <a href="https://console.cloud.google.com/google/maps-apis/credentials?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener">Google Cloud Console</a>.</li>
+          <li>Aktifkan <strong>Maps JavaScript API</strong> (dan <strong>Elevation API</strong> opsional).</li>
+          <li>Tempel key Anda di bawah — key hanya disimpan di <code>localStorage</code> browser Anda.</li>
+        </ol>
+      </div>
+      <div class="key-row">
+        <input type="password" id="api-key-input" placeholder="AIza... (Maps Demo Key / Cloud API Key)" autocomplete="off" />
+        <button class="btn primary" id="btn-save-key">Muat Peta Satelit</button>
+      </div>
+      <div class="gate-foot">
+        <span class="note-tiny">Pembatasan key via HTTP Referrer dianjurkan untuk produksi.</span>
+        <a class="btn three" href="./index.html">Lanjut ke Three.js 3D Twin →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Approximate plant-to-WGS84 mapping centered near Citeureup complex (-6.479811, 106.899118)
+    const BASE_LAT = -6.4804;
+    const BASE_LNG = 106.8968;
+    const METERS_PER_UNIT = 4.0;
+    const mToLat = (dy_m) => dy_m / 111111.0;
+    const mToLng = (dx_m) => dx_m / (111111.0 * Math.cos(BASE_LAT * Math.PI / 180));
+    function plantXYtoLatLng(px, py) {
+      return {
+        lat: Number((BASE_LAT + mToLat(py * METERS_PER_UNIT)).toFixed(6)),
+        lng: Number((BASE_LNG + mToLng(px * METERS_PER_UNIT)).toFixed(6)),
+      };
+    }
+
+    const FACILITIES = [
+      { id: 'plant14', name: 'Plant 14 Preheater & Kilns', tag: 'Pabrik', px: 80, py: 0, alt: 35, heading: -30,
+        desc: 'Menara preheater 5-6 tingkat, dua unit rotary kiln miring, grate cooler, baghouse, dan cerobong kembar Plant 14.' },
+      { id: 'silos', name: 'Cement Silos & Rel Curah', tag: 'Silo', px: 98, py: -2, alt: 28, heading: -55,
+        desc: 'Lima silo semen beton utama, hopper corong curah, dan rel gerbong tangki curah internal di tepi sungai.' },
+      { id: 'gmo', name: 'PT Indocement - GMO Office', tag: 'Kantor', px: 20.5, py: 15.0, alt: 16, heading: -36,
+        desc: 'Gedung General Management & Operations (GMO Office) berdampingan dengan jalur skybridge dan parkir plaza.' },
+      { id: 'p14off', name: 'Plant 14 Office & CCR', tag: 'Kantor', px: 34.5, py: 10.5, alt: 14, heading: -36,
+        desc: 'Gedung administrasi & ruang kendali operasi Plant 14 di sisi timur GMO Office.' },
+      { id: 'domes', name: 'Kompleks 4 Storage Domes', tag: 'Kubah', px: -25, py: 10, alt: 22, heading: 25,
+        desc: 'Empat kubah penyimpanan limestone/raw material utama dengan jaringan konveyor tertutup.' },
+      { id: 'clinker', name: 'Clinker Dome & Barrel Vault', tag: 'Klinker', px: -12, py: -39, alt: 22, heading: 15,
+        desc: 'Kubah klinker besar sisi selatan dekat lekukan Sungai Cileungsi, Barrel Vault, dan bunker klinker terbuka.' },
+      { id: 'central', name: 'Central Finishing & Raw Mill Grid', tag: 'Proses', px: 8, py: 32, alt: 16, heading: -36,
+        desc: 'Deretan hall Raw Mill II, Finish Mill III, Coal/Gypsum Hall, serta tiga silo blending tengah.' },
+      { id: 'gate', name: 'Gerbang Utama & Timbangan', tag: 'Gerbang', px: -54, py: 42, alt: 12, heading: 160,
+        desc: 'Pintu gerbang utama Jl. Indocement dengan jembatan timbang truk ganda dan laboratorium uji beton.' },
+      { id: 'logistic', name: 'Indocement Logistic Div', tag: 'Logistik', px: 50, py: 52, alt: 14, heading: -145,
+        desc: 'Pelataran logistik, kontainer distribusi, dan gudang pengiriman sisi utara-timur.' },
+      { id: 'tank', name: 'Tank Farm, Clarifier & Gardu HV', tag: 'Utilitas', px: 56, py: 28, alt: 14, heading: -130,
+        desc: 'Tangki BBM, peluru LPG, kolam klarifier ganda, menara pendingin 3-sel, dan gardu induk HV.' },
+      { id: 'paperbag', name: 'Paper Bag Division', tag: 'Kemasan', px: -50, py: -6, alt: 12, heading: 45,
+        desc: 'Deretan gedung paralel divisi produksi kantong semen di sektor barat daya.' },
+      { id: 'dp2', name: 'Mining DP 02 & Mechanical DP 2', tag: 'Tambang', px: -92, py: 15, alt: 14, heading: 50,
+        desc: 'Bengkel mekanikal alat berat DP 2 dan kantor operasional tambang di teras barat.' },
+      { id: 'river', name: 'Sungai Cileungsi (Batas Selatan)', tag: 'Sungai', px: 28, py: -20, alt: 8, heading: 0,
+        desc: 'Aliran Sungai Cileungsi yang berkelok membentuk batas alami selatan kawasan PT Indocement.' },
+      { id: 'overview', name: 'Overview Kawasan Indocement', tag: 'Kawasan', px: 0, py: 5, alt: 0, heading: 0, range: 1150,
+        desc: 'Tampilan satelit menyeluruh pabrik PT Indocement Tunggal Prakarsa Tbk — Citeureup Factory.' },
+    ];
+
+    let activeKey = new URLSearchParams(location.search).get('key') || localStorage.getItem('gmp_api_key') || '';
+    let map3D = null;
+    let map2D = null;
+    let elevService = null;
+    let modelOverlay = null;
+    let glbVisible = false;
+    let mode = '3d';
+    let popover3D = null;
+
+    const lmList = document.getElementById('lm-list');
+    for (const f of FACILITIES) {
+      const btn = document.createElement('button');
+      btn.className = 'landmark-item';
+      btn.innerHTML = `<span>${f.name}</span><span class="lm-tag">${f.tag}</span>`;
+      btn.onclick = () => focusFacility(f, btn);
+      lmList.appendChild(btn);
+    }
+
+    function showKeyGate() {
+      document.getElementById('key-gate').classList.remove('hidden');
+      document.getElementById('api-key-input').value = activeKey;
+    }
+
+    function loadGoogleMapsBootstrap(apiKey) {
+      if (window.google?.maps?.importLibrary) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        // Dynamic Library Import Bootstrap pattern (Maps JavaScript API v=weekly)
+        ((g) => {
+          var h, a, k, p = 'The Google Maps JavaScript API', c = 'google', l = 'importLibrary', q = '__ib__', m = document, b = window;
+          b = b[c] || (b[c] = {});
+          var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams();
+          var u = () => h || (h = new Promise(async (res, rej) => {
+            await (a = m.createElement('script'));
+            e.set('libraries', [...r] + '');
+            for (k in g) e.set(k.replace(/[A-Z]/g, t => '_' + t[0].toLowerCase()), g[k]);
+            e.set('callback', c + '.maps.' + q);
+            a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+            d[q] = () => { res(); resolve(); };
+            a.onerror = () => { h = rej(Error(p + ' could not load.')); reject(h); };
+            m.head.append(a);
+          }));
+          d[l] ? console.warn(p + ' already loaded.') : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+        })({ key: apiKey, v: 'weekly' });
+        google.maps.importLibrary('maps3d').catch(reject);
+      });
+    }
+
+    async function initMapsWithKey(apiKey) {
+      document.getElementById('key-gate').classList.add('hidden');
+      document.getElementById('stats-line').textContent = 'Memuat Google Maps Satelit & Photorealistic 3D Tiles...';
+      try {
+        await loadGoogleMapsBootstrap(apiKey);
+        const {
+          Map3DElement,
+          Marker3DInteractiveElement,
+          Model3DElement,
+          PopoverElement,
+          AltitudeMode,
+        } = await google.maps.importLibrary('maps3d');
+        const { Map } = await google.maps.importLibrary('maps');
+        const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary('marker');
+        const { ElevationService } = await google.maps.importLibrary('elevation');
+        elevService = new ElevationService();
+
+        // 1. Initialize Google Photorealistic 3D Map (<gmp-map-3d>)
+        const host3D = document.getElementById('map-3d-host');
+        host3D.innerHTML = '';
+        map3D = new Map3DElement({
+          center: { lat: -6.479811, lng: 106.899118, altitude: 60 },
+          range: 1150,
+          tilt: 58,
+          heading: -12,
+          mode: 'HYBRID',
+        });
+        map3D.setAttribute('internal-usage-attribution-ids', 'gmp_git_agentskills_v1');
+        host3D.append(map3D);
+
+        popover3D = new PopoverElement({ open: false });
+        map3D.append(popover3D);
+
+        // 2. Add 3D Interactive Markers matching Indocement facilities
+        for (const fac of FACILITIES) {
+          if (fac.id === 'overview') continue;
+          const pos = { ...plantXYtoLatLng(fac.px, fac.py), altitude: fac.alt };
+          const mk3 = new Marker3DInteractiveElement({
+            position: pos,
+            altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+            extruded: true,
+            label: fac.name,
+            title: fac.name,
+          });
+          mk3.addEventListener('gmp-click', () => focusFacility(fac));
+          map3D.append(mk3);
+        }
+
+        // Optional Model3DElement overlay for indocement_3d_map_full.glb
+        modelOverlay = new Model3DElement({
+          src: new URL('./indocement_3d_map_full.glb', location.href).href,
+          position: { lat: BASE_LAT, lng: BASE_LNG, altitude: 2 },
+          altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+          orientation: { heading: 0, tilt: 0, roll: 0 },
+          scale: METERS_PER_UNIT,
+        });
+
+        // 3. Initialize 2D Hybrid Satellite Map (google.maps.Map + AdvancedMarkerElement)
+        map2D = new Map(document.getElementById('map-2d'), {
+          center: { lat: -6.479811, lng: 106.899118 },
+          zoom: 17,
+          mapTypeId: 'hybrid',
+          mapId: 'DEMO_MAP_ID',
+          tilt: 45,
+          internalUsageAttributionIds: ['gmp_git_agentskills_v1'],
+        });
+        for (const fac of FACILITIES) {
+          if (fac.id === 'overview') continue;
+          const pos = plantXYtoLatLng(fac.px, fac.py);
+          const pin = new PinElement({
+            background: '#059669',
+            borderColor: '#ecfdf5',
+            glyphColor: '#ffffff',
+            scale: 0.9,
+          });
+          const mk2 = new AdvancedMarkerElement({
+            map: map2D,
+            position: pos,
+            title: fac.name,
+            content: pin,
+          });
+          mk2.addListener('click', () => focusFacility(fac));
+        }
+
+        document.getElementById('stats-line').textContent =
+          'Google Maps Platform Aktif · Citeureup (-6.479811, 106.899118) · Maps 3D + Satellite + Elevation';
+      } catch (err) {
+        console.error('Google Maps load error:', err);
+        document.getElementById('stats-line').textContent = 'Gagal memuat Google Maps API Key — periksa key & API yang diaktifkan.';
+        document.getElementById('status-dot').style.background = '#ef4444';
+        showKeyGate();
+      }
+    }
+
+    async function focusFacility(fac, btnEl = null) {
+      document.querySelectorAll('.landmark-item').forEach(b => b.classList.remove('selected'));
+      if (btnEl) btnEl.classList.add('selected');
+      const coords = fac.id === 'overview'
+        ? { lat: -6.479811, lng: 106.899118 }
+        : plantXYtoLatLng(fac.px, fac.py);
+
+      document.getElementById('info-title').textContent = fac.name;
+      document.getElementById('info-desc').textContent = fac.desc;
+      document.getElementById('info-gps').textContent = `${coords.lat}, ${coords.lng}`;
+      document.getElementById('info-elev').textContent = 'Elevasi: memuat...';
+      document.getElementById('info-box').classList.add('visible');
+
+      if (map3D) {
+        map3D.flyCameraTo({
+          endCamera: {
+            center: { lat: coords.lat, lng: coords.lng, altitude: fac.alt || 40 },
+            tilt: fac.id === 'overview' ? 56 : 64,
+            heading: fac.heading || 0,
+            range: fac.range || 320,
+          },
+          durationMillis: 1400,
+        });
+        if (popover3D) {
+          popover3D.innerHTML = `<div style="padding:8px 10px;max-width:220px;color:#0f172a;">
+            <strong>${fac.name}</strong><br/><span style="font-size:12px;">${fac.desc}</span></div>`;
+          popover3D.positionAnchor = { lat: coords.lat, lng: coords.lng, altitude: (fac.alt || 20) + 18 };
+          popover3D.open = true;
+        }
+      }
+      if (map2D) {
+        map2D.panTo(coords);
+        map2D.setZoom(fac.id === 'overview' ? 16 : 18);
+      }
+      if (elevService) {
+        try {
+          const res = await elevService.getElevationForLocations({ locations: [coords] });
+          const el = res.results?.[0]?.elevation;
+          if (typeof el === 'number') {
+            document.getElementById('info-elev').textContent = `Elevasi: ${el.toFixed(1)} m dpl`;
+          }
+        } catch {
+          document.getElementById('info-elev').textContent = 'Elevasi API tidak aktif';
+        }
+      }
+    }
+
+    document.getElementById('btn-sidebar').onclick = (e) => {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      e.currentTarget.classList.toggle('active');
+    };
+    document.getElementById('btn-mode-3d').onclick = (e) => {
+      mode = '3d';
+      document.getElementById('map-3d-host').classList.remove('hidden');
+      document.getElementById('map-2d-host').classList.add('hidden');
+      e.currentTarget.classList.add('active');
+      document.getElementById('btn-mode-2d').classList.remove('active');
+    };
+    document.getElementById('btn-mode-2d').onclick = (e) => {
+      mode = '2d';
+      document.getElementById('map-2d-host').classList.remove('hidden');
+      document.getElementById('map-3d-host').classList.add('hidden');
+      e.currentTarget.classList.add('active');
+      document.getElementById('btn-mode-3d').classList.remove('active');
+    };
+    document.getElementById('btn-toggle-glb').onclick = (e) => {
+      if (!map3D || !modelOverlay) return;
+      glbVisible = !glbVisible;
+      e.currentTarget.classList.toggle('active', glbVisible);
+      if (glbVisible) map3D.append(modelOverlay);
+      else modelOverlay.remove();
+    };
+    document.getElementById('btn-change-key').onclick = showKeyGate;
+    document.getElementById('btn-save-key').onclick = () => {
+      const val = document.getElementById('api-key-input').value.trim();
+      if (!val) return;
+      activeKey = val;
+      localStorage.setItem('gmp_api_key', activeKey);
+      initMapsWithKey(activeKey);
+    };
+
+    if (activeKey) {
+      initMapsWithKey(activeKey);
+    }
+  </script>
+</body>
+
+</html>
