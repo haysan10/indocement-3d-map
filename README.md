@@ -1,14 +1,14 @@
-# PT Indocement Tunggal Prakarsa Tbk — Citeureup 3D Interactive Map (v3 Satellite-Aligned)
+# PT Indocement Tunggal Prakarsa Tbk — Citeureup 3D Interactive Map (v4 Full Complex · 1:1 Meter)
 
-Interactive, photorealistic Indocement-only 3D Digital Twin built in **Blender 5.3 Cycles (`AgX`)** aligned to Google Maps Satellite coordinates (`-6.479811, 106.899118`), powered online by Open-Source GitHub 3D Engines & Google Maps Platform:
+Interactive, photorealistic Indocement-only 3D Digital Twin (`2048 m × 992 m`, `1 Blender unit = 1 meter`) built in **Blender 5.3 Cycles (`AgX`)** aligned to the full wide Google Maps Satellite extent centered near `(-6.47945, 106.89552)`, powered online by Open-Source 3D Engines & Google Maps Platform:
 
 - **Three.js Photoreal Engine (N8AO + Sky + Water + BVH Path Tracer):** https://haysan10.github.io/indocement-3d-map/
 - **Babylon.js 7 Engine (SSAO2 + WaterMaterial + ACES):** https://haysan10.github.io/indocement-3d-map/babylon.html
 - **Google Maps Platform Satellite & Photorealistic 3D View (`<gmp-map-3d>`):** https://haysan10.github.io/indocement-3d-map/google-maps.html
-- **Direct Download GLB (`WebP PBR`):** `indocement_3d_map_full.glb`
+- **Direct Download GLB (`WebP PBR · 39.7 MB`):** `indocement_3d_map_full.glb`
 
 ## Satellite Alignment & Facilities (PT Indocement Citeureup Only)
-- **Dual Corporate Office Complex:** Adjacent **PT Indocement - GMO Office** & **Plant 14 Office** linked by glazed skybridge, executive parking bays, and corporate signage.
-- **Dense `-36° / +54°` Campus Finishing Grid:** Raw Mill II, Central Finish Mill III, North Crusher/Packing Bays, Cover Coal/Gypsum Hall, Central Silo Trio, Twin Process Clarifier Tanks, Maintenance & Engineering Stores.
-- **Core Cement Lines & Logistics:** 4 Storage Domes, Clinker Dome + Barrel Vault, Open Clinker Stockpile, Dual 5/6-Stage Open Preheater Towers, Dual Inclined Rotary Kilns (`4°`), Cooler, Baghouse, 5 Cement Silos + Rail Hoppers, Tank Farm + LPG + 3-Cell Cooling Tower, HV Substation, Paper Bag Div, Logistic Div, and Mining/Mechanical DP 02.
-- **Sungai Cileungsi Border & Soil Cutaway:** Tight satellite S-bend river meander curving below the Clinker Dome and sweeping NE below GMO / Plant 14 Office, complete with animated reflections and layered geological soil strata.
+- **West Complex (Plant 1–8/11) & SKG Utility:** Western dual preheater towers, raw silos, parallel rotary kilns & coolers, Mechanical & Mining DP 02, Paper Bag Div & QC Lab, and SKG Utility Indocement Rahana.
+- **Main Entrances & Central Complex:** Gerbang Pos 5 Jl. Indocement, Weighbridge, MIS Office, North Logistic Div & West Gate, **4+1 Storage Domes**, Raw Mill / Central Process Hall, Open Clinker Stockpile, Twin Barrel Vaults, and **Clinker Dome** on dry riverbank north of Sungai Cileungsi.
+- **East Campus Finishing Grid & Offices:** Oriented `+52°` finishing halls, TSB Workshop, **PT Indocement - GMO Office** & **Plant 14 Office / CCR** linked by glazed skybridge over smooth matte asphalt plaza.
+- **Plant 14 Peninsula & Sungai Cileungsi:** 158 m 6-stage open-frame Mega Preheater, 165 m main stack with warning bands & animated plume, rotary kiln, grate cooler, long enclosed conveyor gallery, Twin Peninsula Cement Silos & rail bulk hoppers framed by the Sungai Cileungsi meander and layered geological soil cutaway.

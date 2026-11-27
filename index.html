@@ -211,7 +211,7 @@
 
 <body>
   <div id="loader">
-    <div class="loader-title">PT Indocement Citeureup (v3) — Open 3D Engine Stack</div>
+    <div class="loader-title">PT Indocement Citeureup (v4 · 1:1 Meter) — Open 3D Engine Stack</div>
     <div class="bar-wrap"><div id="bar-fill" class="bar-fill"></div></div>
     <div id="loader-sub" class="loader-sub">Menginisialisasi Three.js + N8AO + Sky + Water...</div>
   </div>
@@ -223,7 +223,7 @@
     <div class="card brand">
       <div class="brand-dot" id="status-dot"></div>
       <div>
-        <h1>PT Indocement Tunggal Prakarsa Tbk — Citeureup 3D Twin</h1>
+        <h1>PT Indocement Tunggal Prakarsa Tbk — Citeureup 3D Twin (v4)</h1>
         <p id="stats-line">Three.js 0.187 · N8AO · Physical Sky · Reflective River · AgX</p>
       </div>
     </div>
@@ -246,8 +246,8 @@
 
   <aside class="card sidebar" id="sidebar">
     <div class="sidebar-head">
-      <span>Area PT Indocement</span>
-      <span id="lm-count">13</span>
+      <span>Area PT Indocement (1:1 m)</span>
+      <span id="lm-count">15</span>
     </div>
     <div class="search-box">
       <input type="text" id="lm-search" placeholder="Cari kiln, kubah, kantor, rel..." />
@@ -271,6 +271,7 @@
 
   <nav class="card bottom-dock">
     <button class="btn active" data-cam="overview">Overview</button>
+    <button class="btn" data-cam="west">Plant 1–11 Barat</button>
     <button class="btn" data-cam="preheater">Plant 14 &amp; Kiln</button>
     <button class="btn" data-cam="domes">Kubah &amp; Konveyor</button>
     <button class="btn" data-cam="gmo">GMO Office</button>
@@ -291,87 +292,93 @@
     import { N8AOPass } from 'n8ao';
     import { WebGLPathTracer } from 'three-gpu-pathtracer';
 
-    // Exact Y-up coordinates mapped from Blender (X, Y, Z) -> (X, Z, -Y)
+    // Exact 1:1 meter Y-up coordinates mapped from Blender v4 (X, Y, Z) -> (X, Z, -Y)
     const CAM_PRESETS = {
-      overview:  { pos: [0, 118, 154], target: [0, 0, 2] },
-      preheater: { pos: [48, 20, 34],  target: [80, 6.5, 0] },
-      domes:     { pos: [-48, 34, 62], target: [-16, 4.5, 4] },
-      gmo:       { pos: [4, 18, 12],   target: [24, 3.5, -14] },
-      gate:      { pos: [-72, 11, -22], target: [-53.5, 3, -40.5] },
-      river:     { pos: [24, 22, 74],  target: [8, 0.5, 30] },
-      top:       { pos: [0, 205, 0.5], target: [0, 0, 0] },
+      overview:  { pos: [-40, 820, 1120], target: [0, 10, 10] },
+      west:      { pos: [-525, 165, 55],  target: [-745, 48, -195] },
+      preheater: { pos: [505, 155, 250],  target: [700, 62, 22] },
+      domes:     { pos: [-230, 185, 290], target: [-15, 28, 35] },
+      gmo:       { pos: [265, 92, 225],   target: [416, 16, 57] },
+      gate:      { pos: [-385, 76, -135], target: [-256, 8, -245] },
+      river:     { pos: [350, 135, 690],  target: [195, 2, 415] },
+      top:       { pos: [0, 1850, 2],     target: [0, 0, 0] },
     };
 
     const LANDMARKS = [
       {
-        id: 'plant14_kiln', name: 'Plant 14 Preheater & Kilns', cat: 'plant', label: 'Pabrik',
-        pos: [80, 14, 0], view: [48, 22, 32],
-        desc: 'Menara preheater rangka baja terbuka 5–6 lantai dengan siklon & downcomer internal, 2 rotary kiln miring 4° (heat-shell refraktori), ID fan, dan baghouse.'
+        id: 'plant14_kiln', name: 'Plant 14 Preheater (158m) & Stack', cat: 'plant', label: 'Plant 14',
+        pos: [700, 75, 17], view: [505, 155, 250],
+        desc: 'Menara preheater rangka baja terbuka 6 lantai (158 m), cerobong utama 165 m, rotary kiln miring, grate cooler, baghouse, dan galeri konveyor.'
       },
       {
-        id: 'rail_silo', name: 'Cement Silos & Rel Curah', cat: 'log', label: 'Silo',
-        pos: [98, 12, 2], view: [66, 18, 32],
-        desc: '5 silo semen beton dengan corong hopper, cerobong uap merah-putih, 3 gerbong tangki curah di atas bantalan rel beton, dan koridor pemuatan.'
+        id: 'rail_silo', name: 'Peninsula Mega Silos & Rel Curah', cat: 'log', label: 'Silo',
+        pos: [896, 36, 85], view: [710, 125, 275],
+        desc: 'Silo semen semenanjung timur berdinding beton, corong curah truk & gerbong tangki di kelokan Sungai Cileungsi.'
       },
       {
-        id: 'domes', name: 'Kompleks 4 Storage Domes', cat: 'plant', label: 'Kubah',
-        pos: [-25, 10, -10], view: [-54, 34, 48],
-        desc: '4 kubah material baku beratap rusuk baja meridional, pilar buttress bertingkat, menara transfer konveyor, dan aula Raw Mill / Finish Mill.'
+        id: 'west_complex', name: 'Plant 1–8/11 Barat (Preheater & Silos)', cat: 'plant', label: 'Barat',
+        pos: [-745, 48, -195], view: [-525, 165, 55],
+        desc: 'Kompleks Plant 1–8/11 sektor barat: menara preheater kembar, 4 silo bahan baku, rotary kiln paralel, dan hall pendingin.'
       },
       {
-        id: 'clinker_dome', name: 'Clinker Dome, Vault & Stockpile', cat: 'plant', label: 'Klinker',
-        pos: [-10, 9, 32], view: [-26, 22, 62],
-        desc: 'Kubah klinker besar sisi selatan, aula lengkung Barrel Vault berusuk lengkung, dan bunker timbunan klinker terbuka lengkap dengan excavator.'
+        id: 'domes', name: 'Kompleks 4+1 Storage Domes', cat: 'plant', label: 'Kubah',
+        pos: [-15, 28, 35], view: [-230, 185, 290],
+        desc: 'Kubah material baku beratap rusuk baja meridional, menara transfer konveyor, hall proses Raw/Finish Mill, dan jaringan belt konveyor.'
+      },
+      {
+        id: 'clinker_dome', name: 'Clinker Dome, Twin Vault & Stockpile', cat: 'plant', label: 'Klinker',
+        pos: [78, 24, 355], view: [-145, 145, 575],
+        desc: 'Clinker Dome selatan di tanggul kering utara sungai, 2 Barrel Vault berusuk lengkung paralel, dan timbunan klinker + excavator.'
       },
       {
         id: 'gmo_office', name: 'PT Indocement - GMO Office', cat: 'plant', label: 'Kantor',
-        pos: [20.5, 7.5, -15], view: [4, 18, 10],
-        desc: 'Gedung administrasi & General Management Office PT Indocement bermuka curtain-wall kaca, dilengkapi kanopi, bendera, dan plaza parkir.'
+        pos: [398, 16, 62], view: [265, 92, 225],
+        desc: 'Gedung administrasi & General Management Office bermuka curtain-wall kaca, plaza aspal mulus, kanopi drop-off, dan taman bendera.'
       },
       {
-        id: 'p14_office', name: 'Plant 14 Office & CCR Wing', cat: 'plant', label: 'Kontrol',
-        pos: [34, 6.5, -10.5], view: [22, 16, 12],
-        desc: 'Sayap gedung Plant 14 Office & Central Control Room di sisi timur GMO yang terhubung oleh skybridge berkaca.'
+        id: 'p14_office', name: 'Plant 14 Office, Skybridge & CCR', cat: 'plant', label: 'Kontrol',
+        pos: [465, 16, 52], view: [350, 86, 200],
+        desc: 'Gedung Plant 14 Office & Central Control Room terhubung langsung oleh skybridge kaca dari GMO Office.'
       },
       {
-        id: 'main_gate', name: 'Gerbang Utama Jl. Indocement', cat: 'log', label: 'Gerbang',
-        pos: [-54.8, 5.5, -41.4], view: [-72, 12, -22],
-        desc: 'Portal akses utama PT Indocement Tunggal Prakarsa Tbk — Citeureup Factory lengkap dengan pos satpam kaca, boom gate, dan zebra cross.'
+        id: 'main_gate', name: 'Gerbang Pos 5 Jl. Indocement', cat: 'log', label: 'Gerbang',
+        pos: [-244, 10, -267], view: [-385, 76, -135],
+        desc: 'Gerbang utama Pos 5 PT Indocement Tunggal Prakarsa Tbk lengkap dengan pos jaga, palang pintu ganda, dan marka akses Jl. Indocement.'
       },
       {
-        id: 'weighbridge', name: 'Jembatan Timbang Truk', cat: 'log', label: 'Timbang',
-        pos: [-51.5, 3.0, -39.2], view: [-64, 9, -24],
-        desc: 'Platform ganda timbangan truk elektronik berpelat baja bermarka di area inspeksi masuk gerbang utama dengan unit truk molen.'
+        id: 'mis_weighbridge', name: 'MIS Office & Jembatan Timbang', cat: 'log', label: 'Timbang',
+        pos: [-312, 10, -192], view: [-430, 82, -55],
+        desc: 'Kompleks MIS Office Citeureup dan jembatan timbang ganda berpelat baja di koridor masuk sektor tengah-barat.'
       },
       {
-        id: 'raw_mill_2', name: 'Central Finishing, Raw Mill II & Silo Grid', cat: 'plant', label: 'Proses',
-        pos: [8, 6.0, -32], view: [-16, 20, -6],
-        desc: 'Blok gedung finishing & pengemasan bertata kisi -36°/+54° sesuai citra satelit (Raw Mill II, Finish Mill III, Coal/Gypsum Hall, & Trio Silo).'
+        id: 'east_grid', name: 'East Campus Grid (+52°) & TSB Workshop', cat: 'plant', label: 'Proses',
+        pos: [385, 18, -145], view: [175, 155, 65],
+        desc: 'Tata kisi bangunan finishing sektor timur berorientasi +52° (Raw/Finish Mill, Engineering, & TSB Workshop/Repair).'
       },
       {
-        id: 'tank_sub', name: 'Tank Farm, LPG & Cooling Tower', cat: 'plant', label: 'Utilitas',
-        pos: [62, 6, -26], view: [42, 18, -6],
-        desc: 'Tangki penyimpanan bahan bakar/air dalam tanggul beton, 2 tangki LPG horizontal, menara pendingin 3-sel, gardu induk HV, dan pipe rack.'
+        id: 'logistic_div', name: 'Indocement Logistic Div (Utara)', cat: 'log', label: 'Logistik',
+        pos: [272, 14, -439], view: [145, 96, -245],
+        desc: 'Terminal distribusi & gudang logistik utara beserta kontainer pengiriman, palet semen, forklift, dan truk trailer.'
       },
       {
-        id: 'logistic_div', name: 'Indocement Logistic Div', cat: 'log', label: 'Logistik',
-        pos: [46, 6, -54], view: [28, 18, -32],
-        desc: 'Terminal distribusi & gudang logistik utara lengkap dengan kontainer merah/teal, palet semen Tiga Roda, forklift, dan truk trailer.'
+        id: 'paper_bag', name: 'Paper Bag Div & QC Lab', cat: 'log', label: 'Kemasan',
+        pos: [-268, 14, 137], view: [-115, 115, 310],
+        desc: 'Divisi produksi kantong semen (Paper Bag Division) dan area operasional distribusi sektor selatan-tengah.'
       },
       {
-        id: 'paper_bag', name: 'Paper Bag & QC Testing Lab', cat: 'log', label: 'Kemasan',
-        pos: [-44, 5, -16], view: [-24, 20, 14],
-        desc: 'Divisi produksi kantong semen (Paper Bag Division) dan laboratorium uji mutu truk beton beratap metal bergelombang.'
+        id: 'skg_utility', name: 'SKG Utility Indocement Rahana', cat: 'plant', label: 'Utilitas',
+        pos: [-420, 16, 329], view: [-265, 115, 510],
+        desc: 'Fasilitas utilitas SKG Indocement Rahana, tangki penampungan, dan gardu daya di sektor selatan-barat.'
       },
       {
-        id: 'mining_dp2', name: 'Mining DP 02 & Mechanical DP 2', cat: 'plant', label: 'Tambang',
-        pos: [-92, 5.5, -15], view: [-64, 22, 12],
-        desc: 'Deretan bengkel pemeliharaan mekanikal DP 2 dan fasilitas operasional Mining DP 02 di teras barat berlatar hutan tropis.'
+        id: 'mining_dp2', name: 'Mining & Mechanical DP 02', cat: 'plant', label: 'Tambang',
+        pos: [-500, 18, -47], view: [-345, 98, 125],
+        desc: 'Bengkel pemeliharaan mekanikal DP 2 dan zona pendukung pertambangan di kawasan hutan hijau barat-tengah.'
       },
       {
         id: 'sungai_cileungsi', name: 'Sungai Cileungsi & Cutaway Tanah', cat: 'env', label: 'Sungai',
-        pos: [26, 1.0, 27.5], view: [18, 26, 68],
-        desc: 'Batas alami selatan kawasan PT Indocement dengan refleksi air sungai dinamis, bebatuan tepi, dinding penahan, dan penampang lapisan tanah geologis.'
+        pos: [195, 2, 415], view: [350, 135, 690],
+        desc: 'Aliran Sungai Cileungsi yang melingkari semenanjung selatan-timur Indocement dengan refleksi air dinamis dan cutaway strata tanah.'
       },
     ];
 
@@ -421,20 +428,20 @@
     wrap.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.5, 1600);
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 2.0, 9500);
     camera.position.set(...CAM_PRESETS.overview.pos);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.maxPolarAngle = Math.PI * 0.488;
-    controls.minDistance = 8;
-    controls.maxDistance = 380;
+    controls.minDistance = 25;
+    controls.maxDistance = 3200;
     controls.target.set(...CAM_PRESETS.overview.target);
 
     // Physical Sky Dome + Separate Sky Scene for PMREM IBL reflections
     const sky = new Sky();
-    sky.scale.setScalar(1400);
+    sky.scale.setScalar(8000);
     scene.add(sky);
 
     const skyIblScene = new THREE.Scene();
@@ -450,27 +457,31 @@
 
     const sun = new THREE.DirectionalLight(0xfff1dc, 2.85);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.near = 15;
-    sun.shadow.camera.far = 440;
-    sun.shadow.camera.left = -140;
-    sun.shadow.camera.right = 140;
-    sun.shadow.camera.top = 125;
-    sun.shadow.camera.bottom = -125;
-    sun.shadow.bias = -0.00035;
-    sun.shadow.normalBias = 0.035;
+    const smSize = Math.min(4096, renderer.capabilities.maxTextureSize || 2048);
+    sun.shadow.mapSize.set(smSize, smSize);
+    sun.shadow.camera.near = 150;
+    sun.shadow.camera.far = 3100;
+    sun.shadow.camera.left = -1150;
+    sun.shadow.camera.right = 1150;
+    sun.shadow.camera.top = 950;
+    sun.shadow.camera.bottom = -950;
+    sun.shadow.bias = -0.0004;
+    sun.shadow.normalBias = 0.25;
     scene.add(sun);
 
     const nightLights = new THREE.Group();
     for (const [px, py, pz, col, dist] of [
-      [-54, 6, -42, 0xffc87a, 52],
-      [78, 12, 0, 0xffb86c, 92],
-      [24, 9, -14, 0xdbeafe, 68],
-      [-24, 10, 6, 0xffd28a, 78],
-      [98, 10, 2, 0xdbeafe, 70],
-      [46, 8, -54, 0xffd166, 62],
+      [-740, 65, -195, 0xffb86c, 420],
+      [-270, 32, -235, 0xffc87a, 320],
+      [-15, 60, 45, 0xffd28a, 420],
+      [75, 48, 350, 0xffc87a, 340],
+      [430, 42, 60, 0xdbeafe, 320],
+      [700, 95, 22, 0xffb86c, 460],
+      [896, 52, 85, 0xdbeafe, 340],
+      [272, 36, -435, 0xffd166, 320],
+      [-340, 36, 220, 0xffc87a, 340],
     ]) {
-      const pl = new THREE.PointLight(col, 4.2, dist, 1.4);
+      const pl = new THREE.PointLight(col, 320, dist, 1.1);
       pl.position.set(px, py, pz);
       nightLights.add(pl);
     }
@@ -489,9 +500,9 @@
       });
       composer = new EffectComposer(renderer, rt);
       n8aoPass = new N8AOPass(scene, camera, window.innerWidth, window.innerHeight);
-      n8aoPass.configuration.aoRadius = 2.6;
-      n8aoPass.configuration.distanceFalloff = 1.25;
-      n8aoPass.configuration.intensity = 1.75;
+      n8aoPass.configuration.aoRadius = 12.0;
+      n8aoPass.configuration.distanceFalloff = 6.0;
+      n8aoPass.configuration.intensity = 1.65;
       n8aoPass.configuration.aoSamples = 16;
       n8aoPass.configuration.denoiseSamples = 8;
       n8aoPass.configuration.halfRes = true;
@@ -513,7 +524,7 @@
         elev: 42, azim: -138,
         sunCol: 0xfff3de, sunInt: 2.85,
         hemiSky: 0xdbeafe, hemiGnd: 0x3b4838, hemiInt: 0.72,
-        fogCol: 0xcbd5e1, fogDens: 0.00055,
+        fogCol: 0xcbd5e1, fogDens: 0.00012,
         envInt: 0.65, exposure: 1.02, bloom: 0.15, waterCol: 0x0b3a2e, night: false,
       },
       golden: {
@@ -521,7 +532,7 @@
         elev: 9.5, azim: -115,
         sunCol: 0xffa654, sunInt: 3.35,
         hemiSky: 0xfed7aa, hemiGnd: 0x3b2d24, hemiInt: 0.65,
-        fogCol: 0xd9b38c, fogDens: 0.0011,
+        fogCol: 0xd9b38c, fogDens: 0.00024,
         envInt: 0.55, exposure: 0.98, bloom: 0.24, waterCol: 0x16382b, night: false,
       },
       night: {
@@ -529,7 +540,7 @@
         elev: -4.0, azim: 45,
         sunCol: 0x93c5fd, sunInt: 0.48,
         hemiSky: 0x1e293b, hemiGnd: 0x090d16, hemiInt: 0.45,
-        fogCol: 0x0b1220, fogDens: 0.0022,
+        fogCol: 0x0b1220, fogDens: 0.00045,
         envInt: 0.22, exposure: 1.15, bloom: 0.42, waterCol: 0x05181c, night: true,
       },
     };
@@ -569,8 +580,8 @@
       scene.environment = envRT.texture;
       scene.environmentIntensity = m.envInt;
 
-      sun.position.copy(sunVec.clone().multiplyScalar(220));
-      if (m.night) sun.position.set(80, 120, -70);
+      sun.position.copy(sunVec.clone().multiplyScalar(1400));
+      if (m.night) sun.position.set(480, 780, -450);
       sun.color.setHex(m.sunCol);
       sun.intensity = m.sunInt;
 
@@ -740,7 +751,7 @@
             alpha: 0.94,
             fog: true,
           });
-          dynamicWater.material.uniforms['size'].value = 4.2;
+          dynamicWater.material.uniforms['size'].value = 1.6;
           dynamicWater.position.y = 0.015;
           dynamicWater.renderOrder = 2;
           bakedRiverMesh.visible = false;

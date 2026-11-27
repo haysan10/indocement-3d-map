@@ -132,8 +132,8 @@
     <div class="card brand">
       <div class="brand-dot" id="status-dot"></div>
       <div>
-        <h1>PT Indocement Citeureup — Google Maps Satelit &amp; 3D</h1>
-        <p id="stats-line">Koordinat Referensi: -6.479811, 106.899118 (Citeureup, Bogor)</p>
+        <h1>PT Indocement Citeureup (v4 · 1:1 m) — Google Maps Satelit &amp; 3D</h1>
+        <p id="stats-line">Koordinat Pusat Peta: -6.47945, 106.89552 (Citeureup, Bogor · 2048 m × 992 m)</p>
       </div>
     </div>
     <div class="card actions">
@@ -151,7 +151,7 @@
   <aside class="card sidebar" id="sidebar">
     <div class="sidebar-head">
       <span>Titik Satelit Indocement</span>
-      <span>14</span>
+      <span>16</span>
     </div>
     <div class="landmark-list" id="lm-list"></div>
   </aside>
@@ -199,10 +199,10 @@
   </div>
 
   <script>
-    // Approximate plant-to-WGS84 mapping centered near Citeureup complex (-6.479811, 106.899118)
-    const BASE_LAT = -6.4804;
-    const BASE_LNG = 106.8968;
-    const METERS_PER_UNIT = 4.0;
+    // Exact 1:1 meter Citeureup complex mapping centered at (-6.47945, 106.89552)
+    const BASE_LAT = -6.47945;
+    const BASE_LNG = 106.89552;
+    const METERS_PER_UNIT = 1.0;
     const mToLat = (dy_m) => dy_m / 111111.0;
     const mToLng = (dx_m) => dx_m / (111111.0 * Math.cos(BASE_LAT * Math.PI / 180));
     function plantXYtoLatLng(px, py) {
@@ -213,34 +213,38 @@
     }
 
     const FACILITIES = [
-      { id: 'plant14', name: 'Plant 14 Preheater & Kilns', tag: 'Pabrik', px: 80, py: 0, alt: 35, heading: -30,
-        desc: 'Menara preheater 5-6 tingkat, dua unit rotary kiln miring, grate cooler, baghouse, dan cerobong kembar Plant 14.' },
-      { id: 'silos', name: 'Cement Silos & Rel Curah', tag: 'Silo', px: 98, py: -2, alt: 28, heading: -55,
-        desc: 'Lima silo semen beton utama, hopper corong curah, dan rel gerbong tangki curah internal di tepi sungai.' },
-      { id: 'gmo', name: 'PT Indocement - GMO Office', tag: 'Kantor', px: 20.5, py: 15.0, alt: 16, heading: -36,
-        desc: 'Gedung General Management & Operations (GMO Office) berdampingan dengan jalur skybridge dan parkir plaza.' },
-      { id: 'p14off', name: 'Plant 14 Office & CCR', tag: 'Kantor', px: 34.5, py: 10.5, alt: 14, heading: -36,
-        desc: 'Gedung administrasi & ruang kendali operasi Plant 14 di sisi timur GMO Office.' },
-      { id: 'domes', name: 'Kompleks 4 Storage Domes', tag: 'Kubah', px: -25, py: 10, alt: 22, heading: 25,
-        desc: 'Empat kubah penyimpanan limestone/raw material utama dengan jaringan konveyor tertutup.' },
-      { id: 'clinker', name: 'Clinker Dome & Barrel Vault', tag: 'Klinker', px: -12, py: -39, alt: 22, heading: 15,
-        desc: 'Kubah klinker besar sisi selatan dekat lekukan Sungai Cileungsi, Barrel Vault, dan bunker klinker terbuka.' },
-      { id: 'central', name: 'Central Finishing & Raw Mill Grid', tag: 'Proses', px: 8, py: 32, alt: 16, heading: -36,
-        desc: 'Deretan hall Raw Mill II, Finish Mill III, Coal/Gypsum Hall, serta tiga silo blending tengah.' },
-      { id: 'gate', name: 'Gerbang Utama & Timbangan', tag: 'Gerbang', px: -54, py: 42, alt: 12, heading: 160,
-        desc: 'Pintu gerbang utama Jl. Indocement dengan jembatan timbang truk ganda dan laboratorium uji beton.' },
-      { id: 'logistic', name: 'Indocement Logistic Div', tag: 'Logistik', px: 50, py: 52, alt: 14, heading: -145,
-        desc: 'Pelataran logistik, kontainer distribusi, dan gudang pengiriman sisi utara-timur.' },
-      { id: 'tank', name: 'Tank Farm, Clarifier & Gardu HV', tag: 'Utilitas', px: 56, py: 28, alt: 14, heading: -130,
-        desc: 'Tangki BBM, peluru LPG, kolam klarifier ganda, menara pendingin 3-sel, dan gardu induk HV.' },
-      { id: 'paperbag', name: 'Paper Bag Division', tag: 'Kemasan', px: -50, py: -6, alt: 12, heading: 45,
-        desc: 'Deretan gedung paralel divisi produksi kantong semen di sektor barat daya.' },
-      { id: 'dp2', name: 'Mining DP 02 & Mechanical DP 2', tag: 'Tambang', px: -92, py: 15, alt: 14, heading: 50,
-        desc: 'Bengkel mekanikal alat berat DP 2 dan kantor operasional tambang di teras barat.' },
-      { id: 'river', name: 'Sungai Cileungsi (Batas Selatan)', tag: 'Sungai', px: 28, py: -20, alt: 8, heading: 0,
-        desc: 'Aliran Sungai Cileungsi yang berkelok membentuk batas alami selatan kawasan PT Indocement.' },
-      { id: 'overview', name: 'Overview Kawasan Indocement', tag: 'Kawasan', px: 0, py: 5, alt: 0, heading: 0, range: 1150,
-        desc: 'Tampilan satelit menyeluruh pabrik PT Indocement Tunggal Prakarsa Tbk — Citeureup Factory.' },
+      { id: 'plant14', name: 'Plant 14 Mega Preheater (158m) & Stack', tag: 'Plant 14', px: 700, py: -17, alt: 110, heading: -32, range: 460,
+        desc: 'Menara preheater rangka terbuka 6 tingkat (158 m), cerobong 165 m, rotary kiln, grate cooler, baghouse, dan galeri konveyor Plant 14.' },
+      { id: 'silos', name: 'Peninsula Mega Silos & Rel Curah', tag: 'Silo', px: 896, py: -85, alt: 55, heading: -55, range: 360,
+        desc: 'Silo semen semenanjung timur berdinding beton, corong curah truk & rel gerbong tangki di kelokan Sungai Cileungsi.' },
+      { id: 'west', name: 'Plant 1–8/11 Barat (Preheater & Silos)', tag: 'Barat', px: -745, py: 195, alt: 70, heading: 35, range: 480,
+        desc: 'Kompleks Plant 1–8/11 sektor barat: menara preheater kembar, 4 silo bahan baku, rotary kiln paralel, dan hall pendingin.' },
+      { id: 'domes', name: 'Kompleks 4+1 Storage Domes', tag: 'Kubah', px: -15, py: -35, alt: 45, heading: 20, range: 460,
+        desc: 'Empat kubah penyimpanan bahan baku utama beratap rusuk meridional lengkap dengan menara transfer dan jaringan konveyor.' },
+      { id: 'clinker', name: 'Clinker Dome, Twin Vault & Stockpile', tag: 'Klinker', px: 78, py: -355, alt: 40, heading: 22, range: 440,
+        desc: 'Kubah klinker besar selatan di tanggul kering utara Sungai Cileungsi, Barrel Vault kembar, dan bunker timbunan klinker.' },
+      { id: 'gmo', name: 'PT Indocement - GMO Office', tag: 'Kantor', px: 398, py: -62, alt: 28, heading: -30, range: 280,
+        desc: 'Gedung General Management & Operations (GMO Office) berdampingan dengan jalur skybridge dan plaza aspal depan.' },
+      { id: 'p14off', name: 'Plant 14 Office, Skybridge & CCR', tag: 'Kontrol', px: 465, py: -52, alt: 26, heading: -32, range: 260,
+        desc: 'Gedung administrasi & Central Control Room Plant 14 di sisi timur GMO Office.' },
+      { id: 'gate', name: 'Gerbang Pos 5 Jl. Indocement', tag: 'Gerbang', px: -244, py: 267, alt: 20, heading: 155, range: 260,
+        desc: 'Pintu gerbang utama Pos 5 Jl. Indocement dengan pos satpam dan portal akses masuk kompleks.' },
+      { id: 'weigh', name: 'MIS Office & Jembatan Timbang', tag: 'Timbang', px: -312, py: 192, alt: 22, heading: 140, range: 280,
+        desc: 'Kompleks MIS Office Citeureup dan jembatan timbang ganda truk curah di koridor tengah-barat.' },
+      { id: 'eastgrid', name: 'East Campus Grid (+52°) & TSB Workshop', tag: 'Proses', px: 385, py: 145, alt: 35, heading: -130, range: 450,
+        desc: 'Deretan hall finishing berorientasi +52° (Raw Mill, Finish Mill, Engineering) serta TSB Workshop/Repair.' },
+      { id: 'logistic', name: 'Indocement Logistic Div (Utara)', tag: 'Logistik', px: 272, py: 439, alt: 26, heading: -155, range: 300,
+        desc: 'Pelataran logistik, kontainer distribusi, palet semen, dan gudang pengiriman gerbang utara-timur.' },
+      { id: 'paperbag', name: 'Paper Bag Div & QC Lab', tag: 'Kemasan', px: -268, py: -137, alt: 26, heading: 35, range: 320,
+        desc: 'Deretan gedung paralel divisi produksi kantong semen dan laboratorium mutu di sektor selatan-tengah.' },
+      { id: 'skg', name: 'SKG Utility Indocement Rahana', tag: 'Utilitas', px: -420, py: -329, alt: 26, heading: 25, range: 340,
+        desc: 'Fasilitas utilitas SKG Indocement Rahana, tangki bahan bakar/air, dan gardu daya di sektor selatan-barat.' },
+      { id: 'dp2', name: 'Mining DP 02 & Mechanical DP 2', tag: 'Tambang', px: -500, py: 47, alt: 26, heading: 45, range: 320,
+        desc: 'Bengkel mekanikal alat berat DP 2 dan kantor operasional pertambangan di koridor hijau barat.' },
+      { id: 'river', name: 'Sungai Cileungsi (Batas Selatan)', tag: 'Sungai', px: 195, py: -415, alt: 16, heading: -10, range: 520,
+        desc: 'Aliran Sungai Cileungsi yang berkelok membentuk semenanjung Plant 14 dan batas selatan kawasan PT Indocement.' },
+      { id: 'overview', name: 'Overview Kawasan Indocement (2 km)', tag: 'Kawasan', px: 0, py: 0, alt: 0, heading: -8, range: 2150,
+        desc: 'Tampilan satelit menyeluruh pabrik PT Indocement Tunggal Prakarsa Tbk — Citeureup Factory (2048 m × 992 m).' },
     ];
 
     let activeKey = new URLSearchParams(location.search).get('key') || localStorage.getItem('gmp_api_key') || '';
@@ -311,10 +315,10 @@
         const host3D = document.getElementById('map-3d-host');
         host3D.innerHTML = '';
         map3D = new Map3DElement({
-          center: { lat: -6.479811, lng: 106.899118, altitude: 60 },
-          range: 1150,
-          tilt: 58,
-          heading: -12,
+          center: { lat: BASE_LAT, lng: BASE_LNG, altitude: 80 },
+          range: 2150,
+          tilt: 56,
+          heading: -8,
           mode: 'HYBRID',
         });
         map3D.setAttribute('internal-usage-attribution-ids', 'gmp_git_agentskills_v1');
@@ -349,8 +353,8 @@
 
         // 3. Initialize 2D Hybrid Satellite Map (google.maps.Map + AdvancedMarkerElement)
         map2D = new Map(document.getElementById('map-2d'), {
-          center: { lat: -6.479811, lng: 106.899118 },
-          zoom: 17,
+          center: { lat: BASE_LAT, lng: BASE_LNG },
+          zoom: 16,
           mapTypeId: 'hybrid',
           mapId: 'DEMO_MAP_ID',
           tilt: 45,
@@ -375,7 +379,7 @@
         }
 
         document.getElementById('stats-line').textContent =
-          'Google Maps Platform Aktif · Citeureup (-6.479811, 106.899118) · Maps 3D + Satellite + Elevation';
+          'Google Maps Platform Aktif · Citeureup (-6.47945, 106.89552 · v4 2.05 km) · Maps 3D + Satellite + Elevation';
       } catch (err) {
         console.error('Google Maps load error:', err);
         document.getElementById('stats-line').textContent = 'Gagal memuat Google Maps API Key — periksa key & API yang diaktifkan.';
@@ -388,7 +392,7 @@
       document.querySelectorAll('.landmark-item').forEach(b => b.classList.remove('selected'));
       if (btnEl) btnEl.classList.add('selected');
       const coords = fac.id === 'overview'
-        ? { lat: -6.479811, lng: 106.899118 }
+        ? { lat: BASE_LAT, lng: BASE_LNG }
         : plantXYtoLatLng(fac.px, fac.py);
 
       document.getElementById('info-title').textContent = fac.name;

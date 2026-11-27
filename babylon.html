@@ -121,12 +121,13 @@
   </header>
 
   <aside class="card sidebar" id="sidebar">
-    <div class="sidebar-head"><span>Area Indocement</span><span>13</span></div>
+    <div class="sidebar-head"><span>Area Indocement (1:1 m)</span><span>15</span></div>
     <div class="landmark-list" id="lm-list"></div>
   </aside>
 
   <nav class="card bottom-dock">
     <button class="btn active" data-cam="overview">Overview</button>
+    <button class="btn" data-cam="west">Plant 1–11 Barat</button>
     <button class="btn" data-cam="preheater">Plant 14 &amp; Kiln</button>
     <button class="btn" data-cam="domes">Kubah &amp; Konveyor</button>
     <button class="btn" data-cam="gmo">GMO Office</button>
@@ -136,29 +137,31 @@
 
   <script>
     const CAM_PRESETS = {
-      overview:  { pos: [0, 118, 154], target: [0, 0, 2] },
-      preheater: { pos: [48, 20, 34],  target: [80, 6.5, 0] },
-      domes:     { pos: [-48, 34, 62], target: [-16, 4.5, 4] },
-      gmo:       { pos: [4, 18, 12],   target: [24, 3.5, -14] },
-      gate:      { pos: [-72, 11, -22], target: [-53.5, 3, -40.5] },
-      river:     { pos: [24, 22, 74],  target: [8, 0.5, 30] },
+      overview:  { pos: [-40, 820, 1120], target: [0, 10, 10] },
+      west:      { pos: [-525, 165, 55],  target: [-745, 48, -195] },
+      preheater: { pos: [505, 155, 250],  target: [700, 62, 22] },
+      domes:     { pos: [-230, 185, 290], target: [-15, 28, 35] },
+      gmo:       { pos: [265, 92, 225],   target: [416, 16, 57] },
+      gate:      { pos: [-385, 76, -135], target: [-256, 8, -245] },
+      river:     { pos: [350, 135, 690],  target: [195, 2, 415] },
     };
 
     const LANDMARKS = [
-      { id: 'plant14', name: 'Plant 14 Preheater & Kilns', pos: [80, 14, 0], view: [48, 22, 32] },
-      { id: 'silos', name: 'Cement Silos & Rel Curah', pos: [98, 12, 2], view: [66, 18, 32] },
-      { id: 'domes', name: 'Kompleks 4 Storage Domes', pos: [-25, 10, -10], view: [-54, 34, 48] },
-      { id: 'clinker', name: 'Clinker Dome & Vault', pos: [-10, 9, 32], view: [-26, 22, 62] },
-      { id: 'gmo', name: 'PT Indocement - GMO Office', pos: [20.5, 7.5, -15], view: [4, 18, 10] },
-      { id: 'p14off', name: 'Plant 14 Office & CCR Wing', pos: [34, 6.5, -10.5], view: [22, 16, 12] },
-      { id: 'gate', name: 'Gerbang Utama Indocement', pos: [-54.8, 5.5, -41.4], view: [-72, 12, -22] },
-      { id: 'weigh', name: 'Jembatan Timbang Truk', pos: [-51.5, 3.0, -39.2], view: [-64, 9, -24] },
-      { id: 'raw2', name: 'Central Finishing & Raw Mill Grid', pos: [8, 6.0, -32], view: [-16, 20, -6] },
-      { id: 'tank', name: 'Tank Farm, LPG & Cooling', pos: [62, 6, -26], view: [42, 18, -6] },
-      { id: 'log', name: 'Indocement Logistic Div', pos: [46, 6, -54], view: [28, 18, -32] },
-      { id: 'bag', name: 'Paper Bag & QC Lab', pos: [-44, 5, -16], view: [-24, 20, 14] },
-      { id: 'dp2', name: 'Mining & Mechanical DP 2', pos: [-92, 5.5, -15], view: [-64, 22, 12] },
-      { id: 'river', name: 'Sungai Cileungsi & Tanah', pos: [26, 1.0, 27.5], view: [18, 26, 68] },
+      { id: 'plant14', name: 'Plant 14 Preheater (158m) & Stack', pos: [700, 75, 17], view: [505, 155, 250] },
+      { id: 'silos', name: 'Peninsula Silos & Rel Curah', pos: [896, 36, 85], view: [710, 125, 275] },
+      { id: 'west', name: 'Plant 1–8/11 Barat (Preheater)', pos: [-745, 48, -195], view: [-525, 165, 55] },
+      { id: 'domes', name: 'Kompleks 4+1 Storage Domes', pos: [-15, 28, 35], view: [-230, 185, 290] },
+      { id: 'clinker', name: 'Clinker Dome, Twin Vault & Stockpile', pos: [78, 24, 355], view: [-145, 145, 575] },
+      { id: 'gmo', name: 'PT Indocement - GMO Office', pos: [398, 16, 62], view: [265, 92, 225] },
+      { id: 'p14off', name: 'Plant 14 Office, Skybridge & CCR', pos: [465, 16, 52], view: [350, 86, 200] },
+      { id: 'gate', name: 'Gerbang Pos 5 Jl. Indocement', pos: [-244, 10, -267], view: [-385, 76, -135] },
+      { id: 'weigh', name: 'MIS Office & Jembatan Timbang', pos: [-312, 10, -192], view: [-430, 82, -55] },
+      { id: 'eastgrid', name: 'East Campus Grid (+52°) & TSB', pos: [385, 18, -145], view: [175, 155, 65] },
+      { id: 'log', name: 'Indocement Logistic Div (Utara)', pos: [272, 14, -439], view: [145, 96, -245] },
+      { id: 'bag', name: 'Paper Bag Div & QC Lab', pos: [-268, 14, 137], view: [-115, 115, 310] },
+      { id: 'skg', name: 'SKG Utility Indocement Rahana', pos: [-420, 16, 329], view: [-265, 115, 510] },
+      { id: 'dp2', name: 'Mining & Mechanical DP 02', pos: [-500, 18, -47], view: [-345, 98, 125] },
+      { id: 'river', name: 'Sungai Cileungsi & Cutaway', pos: [195, 2, 415], view: [350, 135, 690] },
     ];
 
     function makeBabylonWaterBump(scene) {
@@ -194,18 +197,18 @@
     scene.useRightHandedSystem = true;
     scene.clearColor = new BABYLON.Color4(0.75, 0.82, 0.88, 1);
 
-    const camera = new BABYLON.ArcRotateCamera('cam', 0, 0, 100, new BABYLON.Vector3(...CAM_PRESETS.overview.target), scene);
+    const camera = new BABYLON.ArcRotateCamera('cam', 0, 0, 1200, new BABYLON.Vector3(...CAM_PRESETS.overview.target), scene);
     camera.setPosition(new BABYLON.Vector3(...CAM_PRESETS.overview.pos));
     camera.attachControl(canvas, true);
     camera.wheelDeltaPercentage = 0.025;
-    camera.minZ = 0.5;
-    camera.maxZ = 1600;
+    camera.minZ = 2.0;
+    camera.maxZ = 9500;
     camera.upperBetaLimit = Math.PI * 0.485;
-    camera.lowerRadiusLimit = 8;
-    camera.upperRadiusLimit = 380;
+    camera.lowerRadiusLimit = 25;
+    camera.upperRadiusLimit = 3200;
 
     // Physical Skybox + SkyMaterial
-    const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', { size: 1200 }, scene);
+    const skybox = BABYLON.MeshBuilder.CreateBox('skyBox', { size: 7500 }, scene);
     const skyMat = new BABYLON.SkyMaterial('skyMat', scene);
     skyMat.backFaceCulling = false;
     skyMat.inclination = 0.22;
@@ -219,8 +222,11 @@
     hemi.intensity = 0.68;
 
     const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(0.45, -0.78, -0.45), scene);
-    sun.position = new BABYLON.Vector3(-90, 145, 95);
+    sun.position = new BABYLON.Vector3(-650, 950, 680);
     sun.intensity = 2.6;
+    sun.shadowMinZ = 150;
+    sun.shadowMaxZ = 3100;
+    sun.autoCalcShadowZBounds = true;
     const shadowGen = new BABYLON.ShadowGenerator(2048, sun);
     shadowGen.usePercentageCloserFiltering = true;
     shadowGen.bias = 0.0006;
@@ -239,7 +245,7 @@
     let ssaoPipeline = null;
     try {
       ssaoPipeline = new BABYLON.SSAO2RenderingPipeline('ssao2', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [camera]);
-      ssaoPipeline.radius = 2.2;
+      ssaoPipeline.radius = 10.0;
       ssaoPipeline.totalStrength = 1.15;
       ssaoPipeline.samples = 16;
     } catch (e) {
@@ -251,9 +257,9 @@
     let autoOrbit = false;
 
     const MOODS = {
-      day:    { inc: 0.22, az: 0.25, turb: 4.5, dir: [0.45, -0.78, -0.45], sunPos: [-90, 145, 95], sunCol: [1, 0.96, 0.89], sunInt: 2.65, hemiInt: 0.70, exp: 1.15, fogCol: [0.76, 0.82, 0.88], fogDens: 0.0005, waterCol: [0.04, 0.22, 0.17] },
-      golden: { inc: 0.45, az: 0.20, turb: 9.0, dir: [0.75, -0.32, -0.45], sunPos: [-150, 52, 85], sunCol: [1, 0.65, 0.32], sunInt: 3.1, hemiInt: 0.55, exp: 1.08, fogCol: [0.85, 0.69, 0.53], fogDens: 0.0011, waterCol: [0.09, 0.20, 0.14] },
-      night:  { inc: 0.62, az: 0.72, turb: 1.5, dir: [-0.4, -0.72, 0.4], sunPos: [70, 120, -70], sunCol: [0.55, 0.72, 1.0], sunInt: 0.55, hemiInt: 0.35, exp: 1.25, fogCol: [0.04, 0.07, 0.13], fogDens: 0.0022, waterCol: [0.02, 0.08, 0.10] },
+      day:    { inc: 0.22, az: 0.25, turb: 4.5, dir: [0.45, -0.78, -0.45], sunPos: [-650, 950, 680], sunCol: [1, 0.96, 0.89], sunInt: 2.65, hemiInt: 0.70, exp: 1.15, fogCol: [0.76, 0.82, 0.88], fogDens: 0.00012, waterCol: [0.04, 0.22, 0.17] },
+      golden: { inc: 0.45, az: 0.20, turb: 9.0, dir: [0.75, -0.32, -0.45], sunPos: [-950, 340, 560], sunCol: [1, 0.65, 0.32], sunInt: 3.1, hemiInt: 0.55, exp: 1.08, fogCol: [0.85, 0.69, 0.53], fogDens: 0.00024, waterCol: [0.09, 0.20, 0.14] },
+      night:  { inc: 0.62, az: 0.72, turb: 1.5, dir: [-0.4, -0.72, 0.4], sunPos: [480, 780, -450], sunCol: [0.55, 0.72, 1.0], sunInt: 0.55, hemiInt: 0.35, exp: 1.25, fogCol: [0.04, 0.07, 0.13], fogDens: 0.00045, waterCol: [0.02, 0.08, 0.10] },
     };
 
     function applyMood(key) {
@@ -334,10 +340,10 @@
       if (riverMesh) {
         waterMat = new BABYLON.WaterMaterial('waterMat', scene);
         waterMat.bumpTexture = makeBabylonWaterBump(scene);
-        waterMat.windForce = -4;
-        waterMat.waveHeight = 0.14;
-        waterMat.bumpHeight = 0.15;
-        waterMat.waveLength = 0.25;
+        waterMat.windForce = -5;
+        waterMat.waveHeight = 0.25;
+        waterMat.bumpHeight = 0.16;
+        waterMat.waveLength = 0.08;
         waterMat.colorBlendFactor = 0.42;
         waterMat.waterColor = new BABYLON.Color3(0.04, 0.22, 0.17);
         for (const rm of reflectMeshes) waterMat.addToRenderList(rm);
