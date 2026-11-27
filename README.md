@@ -5,7 +5,7 @@ Interactive, photorealistic Indocement-only 3D Digital Twin (`2048 m × 992 m`, 
 - **Three.js Photoreal Engine (N8AO + Sky + Water + BVH Path Tracer):** https://haysan10.github.io/indocement-3d-map/
 - **Babylon.js 7 Engine (SSAO2 + WaterMaterial + ACES):** https://haysan10.github.io/indocement-3d-map/babylon.html
 - **Google Maps Platform Satellite & Photorealistic 3D View (`<gmp-map-3d>`):** https://haysan10.github.io/indocement-3d-map/google-maps.html
-- **Direct Download GLB (`WebP PBR · 39.7 MB`):** `indocement_3d_map_full.glb`
+- **Direct Download GLB (`WebP PBR · 47.3 MB`):** `indocement_3d_map_full.glb`
 
 ## Satellite Alignment & Facilities (PT Indocement Citeureup Only)
 - **West Complex (Plant 1–8/11) & SKG Utility:** Western dual preheater towers, raw silos, parallel rotary kilns & coolers, Mechanical & Mining DP 02, Paper Bag Div & QC Lab, and SKG Utility Indocement Rahana.
